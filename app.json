@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "BuddyAlert",
+    "slug": "buddyalert",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "buddyalert",
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.christophebraun.buddyalert"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.christophebraun.buddyalert"
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bfce077b-c37e-40aa-adce-bbc7464b6ade"
+      }
+    },
+    "owner": "cbraun"
+  }
+}
