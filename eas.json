@@ -13,8 +13,8 @@
         "EXPO_DEBUG": "1"
       },
       "hooks": {
-        "pre-install": "bash -lc 'pod repo remove trunk || true; pod repo add trunk https://cdn.cocoapods.org/; pod repo update'",
-        "post-install": "bash -lc 'cd ios && pod install --repo-update --verbose'"
+        "pre-install": "bash -lc 'pod repo remove trunk || true; pod repo add trunk https://cdn.cocoapods.org/ || true; pod repo add master https://github.com/CocoaPods/Specs.git || true; pod repo update'",
+        "post-install": "bash -lc 'if [ -d ios ]; then cd ios; if [ -f Podfile ]; then (grep -q \"https://cdn.cocoapods.org\" Podfile || sed -i.bak \"1isource \\'https://cdn.cocoapods.org/\\'\" Podfile); (grep -q \"https://github.com/CocoaPods/Specs.git\" Podfile || sed -i.bak \"1isource \\'https://github.com/CocoaPods/Specs.git\\'\" Podfile); fi; pod install --repo-update --verbose; fi'"
       }
     },
     "preview": {
