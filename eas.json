@@ -11,6 +11,10 @@
       "env": {
         "COCOAPODS_VERBOSE": "true",
         "EXPO_DEBUG": "1"
+      },
+      "hooks": {
+        "pre-install": "bash -lc 'pod repo remove trunk || true; pod repo add trunk https://cdn.cocoapods.org/; pod repo update'",
+        "post-install": "bash -lc 'cd ios && pod install --repo-update --verbose'"
       }
     },
     "preview": {
@@ -21,10 +25,6 @@
       "autoIncrement": true,
       "channel": "production"
     }
-  },
-  "hooks": {
-    "pre-install": "bash -lc 'pod repo remove trunk || true; pod repo add trunk https://cdn.cocoapods.org/; pod repo update'",
-    "post-install": "bash -lc 'cd ios && pod install --repo-update --verbose'"
   },
   "submit": {
     "production": {}
