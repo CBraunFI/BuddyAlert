@@ -20,11 +20,11 @@
     "production": {
       "autoIncrement": true,
       "channel": "production"
-    },
-    "hooks": {
-      "pre-install": "bash ./scripts/eas-pre-install.sh",
-      "post-install": "bash ./scripts/eas-post-install.sh"
     }
+  },
+  "hooks": {
+    "pre-install": "bash -lc 'pod repo remove trunk || true; pod repo add trunk https://cdn.cocoapods.org/; pod repo update'",
+    "post-install": "bash -lc 'cd ios && pod install --repo-update --verbose'"
   },
   "submit": {
     "production": {}
