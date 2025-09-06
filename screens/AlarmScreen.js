@@ -1,32 +1,44 @@
+// screens/AlarmScreen.js
 import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Vibration,
   Animated,
   Easing,
   Platform,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { typography, spacing, colors } from '../styles/designSystem';
 import { Ionicons } from '@expo/vector-icons';
+// ⬇️ Button-Import erstmal auskommentiert, um Fehlerquelle zu testen
+// import ButtonSecondary from '../components/atoms/ButtonSecondary';
 
 export default function AlarmScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
 
-  // Vibrieren beim Öffnen (nur auf nativ)
+  // Params aus NotificationScreen
+  const {
+    alertId = 'simulated-alert',
+    distanceM = null,
+    sinceSec = null,
+    lat = null,
+    lng = null,
+  } = route.params || {};
+
+  // Kurzes Vibrationsfeedback beim Öffnen (nur nativ)
   useEffect(() => {
     if (Platform.OS !== 'web') {
       Vibration.vibrate(500);
     }
   }, []);
 
+  // Dezente Puls-Animation für das Alert-Icon
   const scaleAnim = useRef(new Animated.Value(1)).current;
-
   useEffect(() => {
-    Animated.loop(
+    const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(scaleAnim, {
           toValue: 1.2,
@@ -41,21 +53,44 @@ export default function AlarmScreen() {
           useNativeDriver: Platform.OS !== 'web',
         }),
       ])
-    ).start();
+    );
+    loop.start();
+    return () => loop.stop();
   }, [scaleAnim]);
+
+  const goHome = () => navigation.replace('HomeScreen');
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.iconWrapper, { transform: [{ scale: scaleAnim }] }]}>
+      {/* Animiertes Icon */}
+      <Animated.View
+        style={[styles.iconWrapper, { transform: [{ scale: scaleAnim }] }]}
+      >
         <Ionicons name="alert-circle" size={96} color="#fff" />
       </Animated.View>
 
       <Text style={styles.title}>Alarm wurde gesendet</Text>
-      <Text style={styles.subtitle}>Dein Standort wurde geteilt. Hilfe ist informiert.</Text>
+      <Text style={styles.subtitle}>
+        Dein Standort wurde temporär geteilt. Hilfe ist informiert.
+      </Text>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
-        <Text style={styles.buttonText}>Zurück zur Startseite</Text>
-      </TouchableOpacity>
+      {/* Debug/Info-Bereich (nur DEV) */}
+      {__DEV__ && (
+        <View style={styles.debugBox}>
+          <Text style={styles.debugText}>alertId: {alertId}</Text>
+          {distanceM !== null && (
+            <Text style={styles.debugText}>Entfernung: {distanceM} m</Text>
+          )}
+          {sinceSec !== null && (
+            <Text style={styles.debugText}>Ausgelöst vor: {sinceSec} s</Text>
+          )}
+        </View>
+      )}
+
+      {/* Test-Element statt Button */}
+      <Text style={styles.testText} onPress={goHome}>
+        [Test] Zurück zur Startseite
+      </Text>
     </View>
   );
 }
@@ -63,7 +98,7 @@ export default function AlarmScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primary || '#4D5DFF',
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.lg,
@@ -83,15 +118,25 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     marginBottom: spacing.xl,
+    opacity: 0.95,
   },
-  button: {
-    backgroundColor: '#fff',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    borderRadius: 100,
+  testText: {
+    marginTop: spacing.lg,
+    color: '#fff',
+    fontWeight: '700',
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: '#fff',
+    borderRadius: 6,
   },
-  buttonText: {
-    color: colors.primary || '#4D5DFF',
-    ...typography.button,
+  debugBox: {
+    marginVertical: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+  },
+  debugText: {
+    ...typography.small,
+    color: '#fff',
   },
 });

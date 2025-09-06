@@ -7,23 +7,39 @@
     "userInterfaceStyle": "light",
     "scheme": "buddyalert",
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/bfce077b-c37e-40aa-adce-bbc7464b6ade"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.christophebraun.buddyalert"
+      "supportsTablet": false,
+      "bundleIdentifier": "com.christophebraun.buddyalert",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSUserTrackingUsageDescription": "We use this to improve notifications relevance.",
+        "UIBackgroundModes": [
+          "remote-notification",
+          "remote-notification"
+        ]
+      }
     },
     "android": {
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
       "package": "com.christophebraun.buddyalert"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "onesignal-expo-plugin",
+        {
+          "mode": "development"
+        }
+      ]
     ],
     "splash": {
       "image": "./assets/splash.png",
@@ -33,8 +49,12 @@
     "extra": {
       "eas": {
         "projectId": "bfce077b-c37e-40aa-adce-bbc7464b6ade"
-      }
+      },
+      "oneSignalAppId": "28190a53-0cd4-403d-b9dd-99c8c1c7717c"
     },
-    "owner": "cbraun"
+    "owner": "cbraun",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }

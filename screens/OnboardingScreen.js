@@ -1,21 +1,33 @@
+// screens/OnboardingScreen.js
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { colors, spacing } from '../styles/designSystem';
+import { colors, spacing, typography, elevation } from '../styles/designSystem';
 
 export default function OnboardingScreen() {
   const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/logo.png')} style={styles.logo} resizeMode="contain" />
-      <Text style={styles.title}>Willkommen bei BuddyAlert</Text>
-      <Text style={styles.subtitle}>
-        Dein solidarisches Sicherheitsnetz – minimalistisch, datensparsam und schnell.
+      <Image
+        source={require('../assets/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
+      <Text style={[typography.h1, styles.title]}>
+        Willkommen bei BuddyAlert
       </Text>
+
+      <Text style={[typography.body, styles.subtitle]}>
+        Dein solidarisches Sicherheitsnetz – minimalistisch, datensparsam und
+        schnell.
+      </Text>
+
       <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.replace('Welcome')}
+        accessibilityRole="button"
+        style={[styles.button, elevation(2)]}
+        onPress={() => navigation.replace('WelcomeScreen')}
       >
         <Text style={styles.buttonText}>Los geht’s</Text>
       </TouchableOpacity>
@@ -37,28 +49,27 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
     textAlign: 'center',
+    marginBottom: spacing.md,
   },
   subtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
+    color: colors.textSecondary,
     paddingHorizontal: spacing.md,
   },
   button: {
     backgroundColor: colors.primary,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
-    borderRadius: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 180,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    ...typography.body,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });

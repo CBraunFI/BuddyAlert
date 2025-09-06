@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isVerified == true;
+    }
+
+    // users/{uid}
+    match /users/{uid} {
+      // Nur eigene Daten lesen
+      allow read: if isSignedIn() && request.auth.uid == uid;
+
+      // Eigenen Datensatz anlegen
+      allow create: if isSignedIn() && request.auth.uid == uid;
+
+      // Eigenen Datensatz updaten – aber Verifizierungsfelder dürfen NUR der Admin/Server setzen.
+      allow update: if isSignedIn() && request.auth.uid == uid
+        && request.resource.data.isVerified == resource.data.isVerified
+        && request.resource.data.verifiedAt == resource.data.verifiedAt
+        && request.resource.data.verificationLevel == resource.data.verificationLevel;
+    }
+
+    // alerts/{alertId}
+    match /alerts/{alertId} {
+      // Lesen:
+      // - public: alle eingeloggten Nutzer:innen
+      // - verified: nur verifizierte Nutzer:innen
+      allow read: if isSignedIn() && (
+          resource.data.visibility == 'public' ||
+          (resource.data.visibility == 'verified' && isVerified())
+        );
+
+      // Erstellen:
+      // - Nur eingeloggte Nutzer:innen
+      // - creatorUid muss dem eingeloggten User entsprechen
+      allow create: if isSignedIn()
+        && request.resource.data.creatorUid == request.auth.uid;
+
+      // Updaten:
+      // - Nur der/die Ersteller:in des Alerts
+      allow update: if isSignedIn()
+        && resource.data.creatorUid == request.auth.uid;
+    }
+  }
+}

@@ -1,143 +1,249 @@
+// screens/HomeScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Button, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, Pressable, Alert as RNAlert, StyleSheet, Platform } from 'react-native';
+import { colors, typography } from '../styles/designSystem'; // ggf. Pfad anpassen
+import { createAlert, getFallbackPosition, VISIBILITY, subscribeRecentAlerts } from '../services/alerts';
+import { getCurrentPositionSafe } from '../services/location';
+import MapShim from '../components/MapShim';
 
 export default function HomeScreen({ navigation }) {
-  const [isAlertActive, setIsAlertActive] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 Minuten
-  const [isAvailable, setIsAvailable] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [alerts, setAlerts] = useState([]);
+  const [initialRegion, setInitialRegion] = useState(null);
 
+  // Live-Alerts laden (neueste zuerst)
   useEffect(() => {
-    const loadAvailability = async () => {
+    const unsub = subscribeRecentAlerts((docs) => {
+      setAlerts(docs);
+      // initiale Kartenregion setzen (1x), wenn noch keine da ist
+      if (!initialRegion) {
+        const first = docs[0];
+        if (first?.lat && first?.lng) {
+          setInitialRegion({
+            latitude: first.lat,
+            longitude: first.lng,
+            latitudeDelta: 0.02,
+            longitudeDelta: 0.02,
+          });
+        }
+      }
+    });
+    return () => unsub && unsub();
+  }, [initialRegion]);
+
+  // Fallback-Region, falls noch keine Alerts existieren
+  useEffect(() => {
+    (async () => {
+      if (!initialRegion) {
+        const { lat, lng } = await getFallbackPosition();
+        setInitialRegion({
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        });
+      }
+    })();
+  }, [initialRegion]);
+
+  const onPressTriggerAlert = async ({ useVerified = false } = {}) => {
+    try {
+      setIsSending(true);
+
+      // 1) Echte Position versuchen, sonst Fallback + Nutzerhinweis
+      let coords;
       try {
-        const value = await AsyncStorage.getItem('availability');
-        if (value !== null) {
-          setIsAvailable(JSON.parse(value));
-        }
-      } catch (e) {
-        console.error("Fehler beim Laden des Bereitschaftsstatus", e);
+        coords = await getCurrentPositionSafe({ timeoutMs: 8000 });
+      } catch (locErr) {
+        console.warn('Geo fehlgeschlagen, nutze Fallback:', locErr?.message);
+        RNAlert.alert(
+          'Hinweis',
+          `Echte Position nicht verfügbar (${locErr?.message}). Nutze Fallback-Koordinaten.`
+        );
+        coords = await getFallbackPosition();
       }
-    };
-    loadAvailability();
-  }, []);
 
-  useEffect(() => {
-    let timer;
-    if (isAlertActive && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      setIsAlertActive(false);
-      setTimeLeft(15 * 60);
-    }
-    return () => clearInterval(timer);
-  }, [isAlertActive, timeLeft]);
+      // 2) Alert anlegen
+      const id = await createAlert({
+        lat: coords.lat,
+        lng: coords.lng,
+        visibility: useVerified ? VISIBILITY.VERIFIED : VISIBILITY.PUBLIC,
+      });
 
-  const toggleAlert = () => {
-    if (isAlertActive) {
-      setIsAlertActive(false);
-      setTimeLeft(15 * 60);
-    } else {
-      setIsAlertActive(true);
+      // 3) Erfolgsmeldung
+      RNAlert.alert('Alarm gesendet', `Alert-ID: ${id}`);
+    } catch (e) {
+      console.error('Alert fehlgeschlagen', e);
+      RNAlert.alert('Fehler', e?.message ?? 'Der Alarm konnte nicht gesendet werden.');
+    } finally {
+      setIsSending(false);
     }
   };
 
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-
+  const onSeedFakeAlerts = async () => {
+    try {
+      setIsSending(true);
+      const { addFakeAlerts } = await import('../services/alerts');
+      await addFakeAlerts();
+      RNAlert.alert('Seeding', '3 Fake-Alerts wurden angelegt.');
+    } catch (e) {
+      console.error('Seeding fehlgeschlagen', e);
+      RNAlert.alert('Fehler beim Seeden', e?.message ?? 'Unbekannter Fehler');
+    } finally {
+      setIsSending(false);
+    }
   };
 
-  // Simuliertes Geo-Notification-Polling
-  useEffect(() => {
-    const pollNearbyAlerts = setInterval(() => {
-      if (!isAlertActive && isAvailable) {
-        const simulatedAlert = Math.random() < 0.2; // 20% Chance
-        if (simulatedAlert) {
-          navigation.navigate('Notification');
-        }
-      }
-    }, 15000); // alle 15 Sekunden prüfen
-    return () => clearInterval(pollNearbyAlerts);
-  }, [isAvailable, isAlertActive]);
+  const onRequestWebPushPermission = async () => {
+    try {
+      const { requestWebPushPermission } = await import('../utils/onesignalWeb');
+      requestWebPushPermission();
+    } catch (e) {
+      console.error('Web Push Prompt fehlgeschlagen', e);
+      RNAlert.alert('Hinweis', 'Konnte den Web-Push-Prompt nicht öffnen.');
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>BuddyAlert</Text>
-      <Text style={styles.subtitle}>
-        {isAlertActive ? "Signal aktiv – du bist verbunden" : "Drücke den Button, wenn du dich unwohl fühlst"}
+      <Text style={typography.h1}>BuddyAlert</Text>
+      <Text style={[styles.subtitle, typography.h3]}>
+        Drücke einen Button, um einen Alarm zu erstellen.
       </Text>
 
+      <View style={styles.btnGroup}>
+        <Pressable
+          disabled={isSending}
+          onPress={() => onPressTriggerAlert({ useVerified: false })}
+          style={[
+            styles.button,
+            styles.primary,
+            isSending && styles.disabled,
+          ]}
+        >
+          <Text style={styles.buttonText}>
+            {isSending ? 'Sende…' : 'Alarm auslösen (öffentlich)'}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          disabled={isSending}
+          onPress={() => onPressTriggerAlert({ useVerified: true })}
+          style={[
+            styles.button,
+            styles.secondary,
+            isSending && styles.disabled,
+          ]}
+        >
+          <Text style={styles.buttonText}>
+            {isSending ? 'Sende…' : 'Alarm auslösen (nur verifiziert)'}
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Map-Bereich (MapShim löst plattformspezifisch auf:
+          - native: echte Karte mit Pins
+          - web: Platzhalter ohne native Module)
+      */}
+      <View style={styles.mapContainer}>
+        {initialRegion ? (
+          <MapShim region={initialRegion} alerts={alerts} />
+        ) : (
+          <View style={styles.mapPlaceholder}>
+            <Text style={styles.mapPlaceholderText}>Lade Karte…</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Dev-Helfer (optional): Fake-Alerts anlegen */}
       <Pressable
-        style={({ pressed }) => [
+        disabled={isSending}
+        onPress={onSeedFakeAlerts}
+        style={[
           styles.button,
-          isAlertActive ? styles.buttonActive : styles.buttonInactive,
-          pressed && { opacity: 0.8 }
+          styles.alert,
+          isSending && styles.disabled,
+          { marginTop: 16 },
         ]}
-        onPress={toggleAlert}
       >
-        <Text style={styles.buttonText}>
-          {isAlertActive ? "ALARM BEENDEN" : "BUDDYALERT AKTIVIEREN"}
+        <Text style={[styles.buttonText, { color: colors.onAlert }]}>
+          {isSending ? 'Seede…' : 'Fake-Alerts anlegen (Dev)'}
         </Text>
       </Pressable>
 
-      {isAlertActive && (
-        <Text style={styles.timer}>Noch {formatTime(timeLeft)} Minuten</Text>
+      {/* Web: OneSignal-Prompt auslösen */}
+      {Platform.OS === 'web' && (
+        <Pressable
+          onPress={onRequestWebPushPermission}
+          style={[
+            styles.button,
+            styles.secondary,
+            { marginTop: 12 },
+          ]}
+        >
+          <Text style={styles.buttonText}>
+            Browser-Benachrichtigungen aktivieren
+          </Text>
+        </Pressable>
       )}
-
-      <View style={styles.menu}>
-        <Button title="Einstellungen" onPress={() => navigation.navigate('SettingsScreen')} />
-        <Button title="Notification-Test" onPress={() => navigation.navigate('NotificationScreen')} />
-      </View>
-
-      <Text style={styles.status}>
-        Bereitschaft: {isAvailable ? "Aktiv" : "Inaktiv"}
-      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#fff'
-  },
-  title: {
-    fontSize: 28, fontWeight: 'bold', marginBottom: 10
+    flex: 1,
+    backgroundColor: colors.background,
+    paddingHorizontal: 16,
+    paddingTop: 24,
   },
   subtitle: {
-    fontSize: 16, textAlign: 'center', marginBottom: 30
+    color: colors.muted,
+    marginTop: 6,
+  },
+  btnGroup: {
+    marginTop: 20,
+    gap: 8, // falls RN-Version kein 'gap' kennt: entfernen + dem ersten Button marginBottom: 8 geben
   },
   button: {
-    paddingVertical: 20,
-    paddingHorizontal: 40,
-    borderRadius: 100,
-    elevation: 3
-  },
-  buttonInactive: {
-    backgroundColor: '#4a90e2'
-  },
-  buttonActive: {
-    backgroundColor: '#d0021b'
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
-    color: '#fff', fontSize: 16, fontWeight: 'bold'
+    ...typography.h3,
+    color: '#fff',
   },
-  timer: {
-    marginTop: 20,
-    fontSize: 16,
-    color: '#333'
+  primary: {
+    backgroundColor: colors.primary,
   },
-  menu: {
-    marginTop: 40,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-around'
+  secondary: {
+    backgroundColor: colors.secondary,
   },
-  status: {
-    marginTop: 30,
-    fontSize: 16,
-    color: '#666'
-  }
+  alert: {
+    backgroundColor: colors.alert,
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  mapContainer: {
+    marginTop: 16,
+    height: 260,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#e5e5e5',
+  },
+  mapPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapPlaceholderText: {
+    textAlign: 'center',
+    color: colors.muted,
+  },
 });
