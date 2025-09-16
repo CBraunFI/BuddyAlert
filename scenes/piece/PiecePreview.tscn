@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://cn0p7cuo33wp6"]
+
+[ext_resource type="Script" path="res://scenes/piece/PiecePreview.gd" id="1"]
+
+[node name="PiecePreview" type="Node2D"]
+script = ExtResource("1")
+z_index = 100
