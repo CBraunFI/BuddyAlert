@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=3 uid="uid://dkw31dr27xr6s"]
+
+[ext_resource type="Script" path="res://scripts/ui/BottomBar.gd" id="1"]
+
+[node name="BottomBar" type="HBoxContainer"]
+script = ExtResource("1")
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="RotateButton" type="Button" parent="."]
+text = "Rotate (R)"
+
+[node name="FlipButton" type="Button" parent="."]
+text = "Flip (F)"
+
+[node name="UndoButton" type="Button" parent="."]
+text = "Undo"
+disabled = true
+
+[node name="RedoButton" type="Button" parent="."]
+text = "Redo"
+disabled = true
