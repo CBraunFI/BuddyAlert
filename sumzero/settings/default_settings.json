@@ -1,0 +1,10 @@
+{
+  "board_width": 14,
+  "board_height": 14,
+  "mode": "basis",
+  "ai_level": 2,
+  "contact_rule_corner_only": false,
+  "speed_turn_seconds": 15,
+  "fog_radius": 3,
+  "draft_budget": 70
+}

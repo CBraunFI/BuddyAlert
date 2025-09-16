@@ -90,3 +90,8 @@ android/local.properties
 
 # macOS
 .DS_Store
+
+# Godot project artifacts
+sumzero/.godot/
+sumzero/.import/
+sumzero/export/

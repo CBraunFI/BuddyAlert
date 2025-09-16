@@ -1,0 +1,23 @@
+[gd_scene format=3 load_steps=1]
+
+[node name="PiecePreview" type="Control"]
+custom_minimum_size = Vector2(160, 160)
+anchors_preset = 8
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 160.0
+offset_bottom = 160.0
+
+[node name="InfoLabel" type="Label" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+text = "Piece Preview"
+horizontal_alignment = 1
+vertical_alignment = 1
