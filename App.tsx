@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import OneSignal from 'react-native-onesignal';
 import Constants from 'expo-constants';
-// ggf. deine Navigation importieren:
-// import AppNavigation from './src/navigation/AppNavigation';
+import AppNavigation from './navigation/AppNavigator';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const oneSignalAppId: string | undefined =
   (Constants?.expoConfig?.extra as any)?.oneSignalAppId ??
@@ -38,6 +38,9 @@ export default function App() {
   }, []);
 
   // Hier deine App zurückgeben
-  // return <AppNavigation />;
-  return null;
+  return (
+    <ErrorBoundary>
+      <AppNavigation />
+    </ErrorBoundary>
+  );
 }

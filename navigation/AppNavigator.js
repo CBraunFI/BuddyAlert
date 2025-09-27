@@ -1,17 +1,35 @@
-import React from 'react';
-import { Platform } from 'react-native';
+import React, { lazy, Suspense } from 'react';
+import { Platform, View, Text, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { colors, typography } from '../styles/designSystem';
 
+// Core screens - loaded immediately
 import SplashScreen from '../screens/SplashScreen';
-import WelcomeScreen from '../screens/WelcomeScreen';
-import OnboardingScreen from '../screens/OnboardingScreen';
 import HomeScreen from '../screens/HomeScreen';
-import AlarmScreen from '../screens/AlarmScreen';
-import NotificationScreen from '../screens/NotificationScreen';
-import SettingsScreen from '../screens/SettingsScreen';
-import SupportScreen from '../screens/SupportScreen';
-import LegalScreen from '../screens/LegalScreen';
-import AboutScreen from '../screens/AboutScreen';
+
+// Lazy loaded screens for better initial load performance
+const WelcomeScreen = lazy(() => import('../screens/WelcomeScreen'));
+const OnboardingScreen = lazy(() => import('../screens/OnboardingScreen'));
+const AlarmScreen = lazy(() => import('../screens/AlarmScreen'));
+const NotificationScreen = lazy(() => import('../screens/NotificationScreen'));
+const SettingsScreen = lazy(() => import('../screens/SettingsScreen'));
+const SupportScreen = lazy(() => import('../screens/SupportScreen'));
+const LegalScreen = lazy(() => import('../screens/LegalScreen'));
+const AboutScreen = lazy(() => import('../screens/AboutScreen'));
+
+// Loading component for lazy-loaded screens
+const LoadingScreen = () => (
+  <View style={styles.loadingContainer}>
+    <Text style={styles.loadingText}>Loading...</Text>
+  </View>
+);
+
+// Wrapper component for lazy-loaded screens
+const LazyScreenWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<LoadingScreen />}>
+    {children}
+  </Suspense>
+);
 
 const Stack = createNativeStackNavigator();
 const isWeb = Platform.OS === 'web';
@@ -35,14 +53,24 @@ export default function AppNavigator() {
       />
       <Stack.Screen
         name="WelcomeScreen"
-        component={WelcomeScreen}
         options={{ headerShown: false }}
-      />
+      >
+        {(props) => (
+          <LazyScreenWrapper>
+            <WelcomeScreen {...props} />
+          </LazyScreenWrapper>
+        )}
+      </Stack.Screen>
       <Stack.Screen
         name="OnboardingScreen"
-        component={OnboardingScreen}
         options={{ headerShown: false }}
-      />
+      >
+        {(props) => (
+          <LazyScreenWrapper>
+            <OnboardingScreen {...props} />
+          </LazyScreenWrapper>
+        )}
+      </Stack.Screen>
       <Stack.Screen
         name="HomeScreen"
         component={HomeScreen}
@@ -50,18 +78,65 @@ export default function AppNavigator() {
       />
       <Stack.Screen
         name="AlarmScreen"
-        component={AlarmScreen}
         options={{ headerShown: false }}
-      />
+      >
+        {(props) => (
+          <LazyScreenWrapper>
+            <AlarmScreen {...props} />
+          </LazyScreenWrapper>
+        )}
+      </Stack.Screen>
       <Stack.Screen
         name="NotificationScreen"
-        component={NotificationScreen}
         options={{ headerShown: false }}
-      />
-      <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
-      <Stack.Screen name="SupportScreen" component={SupportScreen} />
-      <Stack.Screen name="LegalScreen" component={LegalScreen} />
-      <Stack.Screen name="AboutScreen" component={AboutScreen} />
+      >
+        {(props) => (
+          <LazyScreenWrapper>
+            <NotificationScreen {...props} />
+          </LazyScreenWrapper>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="SettingsScreen">
+        {(props) => (
+          <LazyScreenWrapper>
+            <SettingsScreen {...props} />
+          </LazyScreenWrapper>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="SupportScreen">
+        {(props) => (
+          <LazyScreenWrapper>
+            <SupportScreen {...props} />
+          </LazyScreenWrapper>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="LegalScreen">
+        {(props) => (
+          <LazyScreenWrapper>
+            <LegalScreen {...props} />
+          </LazyScreenWrapper>
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="AboutScreen">
+        {(props) => (
+          <LazyScreenWrapper>
+            <AboutScreen {...props} />
+          </LazyScreenWrapper>
+        )}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+  },
+  loadingText: {
+    ...typography.body,
+    color: colors.muted,
+  },
+});

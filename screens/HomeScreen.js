@@ -1,15 +1,39 @@
 // screens/HomeScreen.js
-import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Alert as RNAlert, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  Alert as RNAlert,
+  StyleSheet,
+  Platform,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, typography } from '../styles/designSystem'; // ggf. Pfad anpassen
-import { createAlert, getFallbackPosition, VISIBILITY, subscribeRecentAlerts } from '../services/alerts';
-import { getCurrentPositionSafe } from '../services/location';
+import {
+  createAlert,
+  getFallbackPosition,
+  VISIBILITY,
+  subscribeRecentAlerts,
+} from '../services/alerts';
+import {
+  getCurrentPositionSafe,
+  watchPositionSafe,
+} from '../services/location';
+import { getUid } from '../services/identity';
+import { setUserLastLocation } from '../services/users';
 import MapShim from '../components/MapShim';
 
 export default function HomeScreen({ navigation }) {
   const [isSending, setIsSending] = useState(false);
   const [alerts, setAlerts] = useState([]);
   const [initialRegion, setInitialRegion] = useState(null);
+
+  // Block 1: Bereitschaft + Location-Watching
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [watching, setWatching] = useState(false);
+  const watchHandleRef = useRef(null);
+  const [lastLocation, setLastLocation] = useState(null);
 
   // Live-Alerts laden (neueste zuerst)
   useEffect(() => {
@@ -46,7 +70,83 @@ export default function HomeScreen({ navigation }) {
     })();
   }, [initialRegion]);
 
-  const onPressTriggerAlert = async ({ useVerified = false } = {}) => {
+  // Bereitschaft aus Storage laden
+  useEffect(() => {
+    (async () => {
+      try {
+        const value = await AsyncStorage.getItem('availability');
+        if (value !== null) setIsAvailable(!!JSON.parse(value));
+      } catch {
+        // schweigend ignorieren
+      }
+    })();
+  }, []);
+
+  // Watch steuern: in Bereitschaft tracken, sonst stoppen
+  useEffect(() => {
+    if (isAvailable) {
+      startWatching();
+    } else {
+      stopWatching();
+    }
+    return stopWatching; // Cleanup beim Unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAvailable]);
+
+  async function startWatching() {
+    if (watching) return;
+    try {
+      const handle = await watchPositionSafe(async (pos) => {
+        setLastLocation(pos);
+        // Optional: initiale Region beim ersten Fix setzen
+        if (!initialRegion && pos?.lat && pos?.lng) {
+          setInitialRegion((prev) => {
+            if (prev) return prev;
+            return {
+              latitude: pos.lat,
+              longitude: pos.lng,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
+            };
+          });
+        }
+        // NEU: lastLocation in Firestore persistieren
+        try {
+          const uid = await getUid();
+          await setUserLastLocation(uid, pos);
+        } catch (e) {
+          console.warn('setUserLastLocation fehlgeschlagen:', e?.message);
+        }
+      });
+      watchHandleRef.current = handle;
+      setWatching(true);
+    } catch (err) {
+      console.warn('[watchPositionSafe] Fehler:', err?.message);
+      RNAlert.alert(
+        'Standort',
+        'Konnte Standort-Tracking nicht starten. Prüfe Berechtigungen & GPS.'
+      );
+      setWatching(false);
+    }
+  }
+
+  function stopWatching() {
+    try {
+      watchHandleRef.current?.stop?.();
+    } catch {}
+    watchHandleRef.current = null;
+    setWatching(false);
+  }
+
+  const onToggleAvailability = useCallback(async () => {
+    const next = !isAvailable;
+    setIsAvailable(next);
+    try {
+      await AsyncStorage.setItem('availability', JSON.stringify(next));
+    } catch {}
+  }, [isAvailable]);
+
+  const onPressTriggerAlert = useCallback(async ({ useVerified = false } = {}) => {
     try {
       setIsSending(true);
 
@@ -74,13 +174,16 @@ export default function HomeScreen({ navigation }) {
       RNAlert.alert('Alarm gesendet', `Alert-ID: ${id}`);
     } catch (e) {
       console.error('Alert fehlgeschlagen', e);
-      RNAlert.alert('Fehler', e?.message ?? 'Der Alarm konnte nicht gesendet werden.');
+      RNAlert.alert(
+        'Fehler',
+        e?.message ?? 'Der Alarm konnte nicht gesendet werden.'
+      );
     } finally {
       setIsSending(false);
     }
-  };
+  }, []);
 
-  const onSeedFakeAlerts = async () => {
+  const onSeedFakeAlerts = useCallback(async () => {
     try {
       setIsSending(true);
       const { addFakeAlerts } = await import('../services/alerts');
@@ -92,7 +195,7 @@ export default function HomeScreen({ navigation }) {
     } finally {
       setIsSending(false);
     }
-  };
+  }, []);
 
   const onRequestWebPushPermission = async () => {
     try {
@@ -104,22 +207,83 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  const onTestLocation = async () => {
+    try {
+      const pos = await getCurrentPositionSafe({ timeoutMs: 8000 });
+      setLastLocation(pos);
+      if (!initialRegion && pos?.lat && pos?.lng) {
+        setInitialRegion({
+          latitude: pos.lat,
+          longitude: pos.lng,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        });
+      }
+      RNAlert.alert(
+        'Standort ermittelt',
+        `Lat: ${pos.lat?.toFixed(5)}, Lng: ${pos.lng?.toFixed(5)}\nGenauigkeit: ${Math.round(
+          pos.accuracy || 0
+        )} m`
+      );
+    } catch (e) {
+      RNAlert.alert(
+        'Fehler',
+        e?.message ?? 'Standort konnte nicht ermittelt werden.'
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={typography.h1}>BuddyAlert</Text>
-      <Text style={[styles.subtitle, typography.h3]}>
-        Drücke einen Button, um einen Alarm zu erstellen.
-      </Text>
+
+      {/* Bereitschaft + Debug */}
+      <View style={styles.inlineRow}>
+        <Text style={[styles.subtitle, typography.h3]}>
+          Drücke einen Button, um einen Alarm zu erstellen.
+        </Text>
+      </View>
+
+      <View style={styles.statusCard}>
+        <Text style={styles.label}>Bereitschaft:</Text>
+        <Pressable
+          onPress={onToggleAvailability}
+          style={[
+            styles.badge,
+            { backgroundColor: isAvailable ? colors.success : colors.muted },
+          ]}
+        >
+          <Text style={styles.badgeText}>
+            {isAvailable ? 'AKTIV' : 'INAKTIV'}
+          </Text>
+        </Pressable>
+
+        <View style={styles.debugBox}>
+          <Text style={styles.debugLine}>
+            Watching: {watching ? 'Ja' : 'Nein'}
+          </Text>
+          <Text style={styles.debugLine}>
+            Letzter Fix:{' '}
+            {lastLocation
+              ? `${lastLocation.lat?.toFixed(5)}, ${lastLocation.lng?.toFixed(
+                  5
+                )} (${Math.round(lastLocation.accuracy || 0)} m)`
+              : '—'}
+          </Text>
+        </View>
+
+        <Pressable onPress={onTestLocation} style={[styles.button, styles.ghost]}>
+          <Text style={[styles.buttonText, { color: '#000' }]}>
+            Standort testen
+          </Text>
+        </Pressable>
+      </View>
 
       <View style={styles.btnGroup}>
         <Pressable
           disabled={isSending}
           onPress={() => onPressTriggerAlert({ useVerified: false })}
-          style={[
-            styles.button,
-            styles.primary,
-            isSending && styles.disabled,
-          ]}
+          style={[styles.button, styles.primary, isSending && styles.disabled]}
         >
           <Text style={styles.buttonText}>
             {isSending ? 'Sende…' : 'Alarm auslösen (öffentlich)'}
@@ -129,11 +293,7 @@ export default function HomeScreen({ navigation }) {
         <Pressable
           disabled={isSending}
           onPress={() => onPressTriggerAlert({ useVerified: true })}
-          style={[
-            styles.button,
-            styles.secondary,
-            isSending && styles.disabled,
-          ]}
+          style={[styles.button, styles.secondary, isSending && styles.disabled]}
         >
           <Text style={styles.buttonText}>
             {isSending ? 'Sende…' : 'Alarm auslösen (nur verifiziert)'}
@@ -141,10 +301,7 @@ export default function HomeScreen({ navigation }) {
         </Pressable>
       </View>
 
-      {/* Map-Bereich (MapShim löst plattformspezifisch auf:
-          - native: echte Karte mit Pins
-          - web: Platzhalter ohne native Module)
-      */}
+      {/* Map-Bereich */}
       <View style={styles.mapContainer}>
         {initialRegion ? (
           <MapShim region={initialRegion} alerts={alerts} />
@@ -175,15 +332,9 @@ export default function HomeScreen({ navigation }) {
       {Platform.OS === 'web' && (
         <Pressable
           onPress={onRequestWebPushPermission}
-          style={[
-            styles.button,
-            styles.secondary,
-            { marginTop: 12 },
-          ]}
+          style={[styles.button, styles.secondary, { marginTop: 12 }]}
         >
-          <Text style={styles.buttonText}>
-            Browser-Benachrichtigungen aktivieren
-          </Text>
+          <Text style={styles.buttonText}>Browser-Benachrichtigungen aktivieren</Text>
         </Pressable>
       )}
     </View>
@@ -197,13 +348,54 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
   },
+  inlineRow: {
+    marginTop: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   subtitle: {
     color: colors.muted,
     marginTop: 6,
+    flex: 1,
+  },
+  statusCard: {
+    marginTop: 12,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#e5e5e5',
+  },
+  label: {
+    ...typography.h3,
+    marginBottom: 8,
+    color: colors.text,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  badgeText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  debugBox: {
+    marginTop: 12,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: '#EFEFF4',
+  },
+  debugLine: {
+    fontSize: 14,
+    color: colors.text,
+    marginBottom: 4,
   },
   btnGroup: {
-    marginTop: 20,
-    gap: 8, // falls RN-Version kein 'gap' kennt: entfernen + dem ersten Button marginBottom: 8 geben
+    marginTop: 16,
+    gap: 8, // falls RN-Version kein 'gap' kennt, ersetzen: dem ersten Button marginBottom: 8 geben
   },
   button: {
     paddingVertical: 14,
@@ -227,6 +419,12 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.6,
+  },
+  ghost: {
+    backgroundColor: '#fff',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#ddd',
+    marginTop: 10,
   },
   mapContainer: {
     marginTop: 16,
