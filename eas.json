@@ -1,31 +1,20 @@
 {
-  "cli": {
-    "version": ">= 7.0.0",
-    "appVersionSource": "remote"
-  },
+  "cli": { "version": ">= 7.0.0" },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development",
-      "env": {
-        "COCOAPODS_VERBOSE": "true",
-        "EXPO_DEBUG": "1"
-      }
+      "android": { "buildType": "apk" },
+      "ios": { "simulator": false }
     },
     "preview": {
-      "distribution": "internal",
-      "channel": "preview"
+      "distribution": "internal"
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
-    }
-  },
-  "hooks": {
-    "build": {
-      "pre-install": "bash -lc 'pod repo remove trunk || true; pod repo add trunk https://cdn.cocoapods.org/ || true; pod repo add master https://github.com/CocoaPods/Specs.git || true; pod repo update'",
-      "post-install": "bash -lc 'if [ -d ios ]; then cd ios; if [ -f Podfile ]; then (grep -q \"https://cdn.cocoapods.org\" Podfile || sed -i.bak \"1isource \\'https://cdn.cocoapods.org/\\'\" Podfile); (grep -q \"https://github.com/CocoaPods/Specs.git\" Podfile || sed -i.bak \"1isource \\'https://github.com/CocoaPods/Specs.git\\'\" Podfile); fi; pod install --repo-update --verbose; fi'"
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {

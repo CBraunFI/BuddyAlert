@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "24432178814",
+    "project_id": "buddyalert-f861e",
+    "storage_bucket": "buddyalert-f861e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:24432178814:android:a7b41c6dddacadb48b0a2f",
+        "android_client_info": {
+          "package_name": "com.christophebraun.buddyalert"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "24432178814-nqtcal1ui6njnjkgua4vrnp8he37qqmu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiYlBsz9Uk7z6I9i6dlJNnpR9JFJAYdPI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "24432178814-nqtcal1ui6njnjkgua4vrnp8he37qqmu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

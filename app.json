@@ -7,8 +7,7 @@
     "userInterfaceStyle": "light",
     "scheme": "buddyalert",
     "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/bfce077b-c37e-40aa-adce-bbc7464b6ade"
+      "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": [
       "**/*"
@@ -20,24 +19,48 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSUserTrackingUsageDescription": "We use this to improve notifications relevance.",
         "UIBackgroundModes": [
-          "remote-notification",
           "remote-notification"
+        ],
+        "NSLocationWhenInUseUsageDescription": "BuddyAlert nutzt deinen Standort, um in Notfällen Helfer:innen in deiner Nähe zu finden."
+      },
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.christophebraun.buddyalert.onesignal"
         ]
       }
     },
     "android": {
       "icon": "./assets/icon.png",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.christophebraun.buddyalert"
+      "package": "com.christophebraun.buddyalert",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS",
+        "VIBRATE",
+        "INTERNET"
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
       "expo-font",
       [
         "onesignal-expo-plugin",
         {
-          "mode": "development"
+          "mode": "development",
+          "ios_app_group_identifier": "group.com.christophebraun.buddyalert.onesignal"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
         }
       ]
     ],
@@ -52,9 +75,6 @@
       },
       "oneSignalAppId": "28190a53-0cd4-403d-b9dd-99c8c1c7717c"
     },
-    "owner": "cbraun",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    }
+    "owner": "cbraun"
   }
 }
