@@ -1,0 +1,93 @@
+{
+  "common": {
+    "loading": "Lade...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "close": "Schließen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten"
+  },
+  "home": {
+    "title": "BuddyAlert",
+    "subtitle": "Drücke einen Button, um einen Alarm zu erstellen.",
+    "availability": {
+      "label": "Bereitschaft:",
+      "active": "AKTIV",
+      "inactive": "INAKTIV",
+      "watching": "Watching:",
+      "lastFix": "Letzter Fix:",
+      "yes": "Ja",
+      "no": "Nein"
+    },
+    "buttons": {
+      "testLocation": "Standort testen",
+      "triggerAlarmPublic": "Alarm auslösen (öffentlich)",
+      "triggerAlarmVerified": "Alarm auslösen (nur verifiziert)",
+      "seedFake": "Fake-Alerts anlegen (Dev)",
+      "webPush": "Browser-Benachrichtigungen aktivieren",
+      "sending": "Sende…",
+      "about": "Über"
+    },
+    "map": {
+      "loading": "Lade Karte…"
+    },
+    "alerts": {
+      "sent": "Alarm gesendet",
+      "sentMessage": "Alert-ID: {{id}}",
+      "failed": "Alarm fehlgeschlagen",
+      "seedingSuccess": "3 Fake-Alerts wurden angelegt.",
+      "seedingError": "Fehler beim Seeden"
+    }
+  },
+  "location": {
+    "title": "Standort",
+    "error": "Konnte Standort-Tracking nicht starten. Prüfe Berechtigungen & GPS.",
+    "permissionDenied": "Standortberechtigung verweigert.",
+    "permissionPermanentlyDenied": "Standortberechtigung dauerhaft verweigert. Bitte in den Systemeinstellungen erlauben.",
+    "timeout": "Zeitüberschreitung beim Bestimmen der Position.",
+    "invalidFormat": "Unerwartetes Positionsformat.",
+    "determined": "Standort ermittelt",
+    "determinedMessage": "Lat: {{lat}}, Lng: {{lng}}\nGenauigkeit: {{accuracy}} m",
+    "fallbackUsed": "Echte Position nicht verfügbar ({{error}}). Nutze Fallback-Koordinaten."
+  },
+  "errors": {
+    "generic": "Ein unerwarteter Fehler ist aufgetreten.",
+    "network": "Netzwerkfehler. Bitte prüfe deine Internetverbindung.",
+    "permission": "Berechtigung verweigert. Bitte prüfe die App-Einstellungen.",
+    "timeout": "Die Anfrage dauert zu lange. Bitte versuche es erneut.",
+    "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
+    "unauthorized": "Zugriff verweigert. Bitte melde dich erneut an."
+  },
+  "verification": {
+    "title": "Verifizierung",
+    "subtitle": "Verifiziere deine Identität, um verifizierten Helfern Zugang zu gewähren.",
+    "continueWithGoogle": "Mit Google fortfahren",
+    "continueWithGithub": "Mit Github fortfahren",
+    "continueWithMicrosoft": "Mit Microsoft fortfahren",
+    "continueWithApple": "Mit Apple fortfahren",
+    "whyVerify": "Warum verifizieren?",
+    "whyVerifyText": "Verifizierte Nutzer können Alarme senden, die nur von anderen verifizierten Helfern gesehen werden. Dies erhöht die Vertrauenswürdigkeit und Sicherheit.",
+    "success": "Verifizierung erfolgreich",
+    "successMessage": "Du wurdest erfolgreich mit {{provider}} verifiziert.",
+    "error": "Verifizierungsfehler",
+    "alreadyVerified": "Bereits verifiziert",
+    "verifiedWith": "Verifiziert mit",
+    "notVerified": "Nicht verifiziert",
+    "verifyNow": "Jetzt verifizieren",
+    "verifiedBadge": "✓ Verifiziert",
+    "logout": "Abmelden"
+  },
+  "alarm": {
+    "title": "Alarm gesendet",
+    "subtitle": "Dein Standort wurde temporär geteilt. Hilfe ist informiert.",
+    "backToHome": "Zurück zur Startseite",
+    "alertId": "Alert-ID",
+    "distance": "Entfernung",
+    "triggeredAgo": "Ausgelöst vor",
+    "meters": "m",
+    "seconds": "s"
+  }
+}

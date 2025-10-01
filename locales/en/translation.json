@@ -1,0 +1,93 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "home": {
+    "title": "BuddyAlert",
+    "subtitle": "Press a button to create an alarm.",
+    "availability": {
+      "label": "Availability:",
+      "active": "ACTIVE",
+      "inactive": "INACTIVE",
+      "watching": "Watching:",
+      "lastFix": "Last Fix:",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "buttons": {
+      "testLocation": "Test Location",
+      "triggerAlarmPublic": "Trigger Alarm (Public)",
+      "triggerAlarmVerified": "Trigger Alarm (Verified Only)",
+      "seedFake": "Create Fake Alerts (Dev)",
+      "webPush": "Enable Browser Notifications",
+      "sending": "Sending…",
+      "about": "About"
+    },
+    "map": {
+      "loading": "Loading Map…"
+    },
+    "alerts": {
+      "sent": "Alarm Sent",
+      "sentMessage": "Alert ID: {{id}}",
+      "failed": "Alarm Failed",
+      "seedingSuccess": "3 fake alerts created.",
+      "seedingError": "Seeding failed"
+    }
+  },
+  "location": {
+    "title": "Location",
+    "error": "Could not start location tracking. Check permissions & GPS.",
+    "permissionDenied": "Location permission denied.",
+    "permissionPermanentlyDenied": "Location permission permanently denied. Please enable in system settings.",
+    "timeout": "Timeout while determining position.",
+    "invalidFormat": "Unexpected position format.",
+    "determined": "Location Determined",
+    "determinedMessage": "Lat: {{lat}}, Lng: {{lng}}\nAccuracy: {{accuracy}} m",
+    "fallbackUsed": "Real position unavailable ({{error}}). Using fallback coordinates."
+  },
+  "errors": {
+    "generic": "An unexpected error occurred.",
+    "network": "Network error. Please check your internet connection.",
+    "permission": "Permission denied. Please check app settings.",
+    "timeout": "Request is taking too long. Please try again.",
+    "notFound": "The requested resource was not found.",
+    "unauthorized": "Access denied. Please log in again."
+  },
+  "verification": {
+    "title": "Verification",
+    "subtitle": "Verify your identity to grant access to verified helpers.",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithGithub": "Continue with Github",
+    "continueWithMicrosoft": "Continue with Microsoft",
+    "continueWithApple": "Continue with Apple",
+    "whyVerify": "Why verify?",
+    "whyVerifyText": "Verified users can send alerts visible only to other verified helpers. This increases trust and safety.",
+    "success": "Verification Successful",
+    "successMessage": "You have been successfully verified with {{provider}}.",
+    "error": "Verification Error",
+    "alreadyVerified": "Already Verified",
+    "verifiedWith": "Verified with",
+    "notVerified": "Not Verified",
+    "verifyNow": "Verify Now",
+    "verifiedBadge": "✓ Verified",
+    "logout": "Logout"
+  },
+  "alarm": {
+    "title": "Alarm Sent",
+    "subtitle": "Your location has been temporarily shared. Help is informed.",
+    "backToHome": "Back to Home",
+    "alertId": "Alert ID",
+    "distance": "Distance",
+    "triggeredAgo": "Triggered ago",
+    "meters": "m",
+    "seconds": "s"
+  }
+}

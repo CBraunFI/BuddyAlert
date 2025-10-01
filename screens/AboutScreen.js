@@ -40,6 +40,9 @@ export default function AboutScreen() {
         <Text style={typography.caption}>
           Version 1.0.0 • Entwickelt mit ❤️ von echten Menschen
         </Text>
+        <Text style={[typography.caption, styles.copyright]}>
+          © ctnb 2025
+        </Text>
       </View>
     </ScrollView>
   );
@@ -68,5 +71,8 @@ const styles = StyleSheet.create({
   meta: {
     marginTop: spacing.xl,
     alignItems: 'flex-start',
+  },
+  copyright: {
+    marginTop: spacing.sm,
   },
 });
