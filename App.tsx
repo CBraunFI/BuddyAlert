@@ -4,6 +4,8 @@ import OneSignal from 'react-native-onesignal';
 import Constants from 'expo-constants';
 import AppNavigation from './navigation/AppNavigator';
 import ErrorBoundary from './components/ErrorBoundary';
+import { initializeNotifications } from './services/notifications';
+import './i18n.config'; // Initialize i18n
 
 const oneSignalAppId: string | undefined =
   (Constants?.expoConfig?.extra as any)?.oneSignalAppId ??
@@ -11,6 +13,11 @@ const oneSignalAppId: string | undefined =
 
 export default function App() {
   useEffect(() => {
+    // Initialize local notifications (for alarm alerts)
+    initializeNotifications().catch((err) => {
+      console.warn('Failed to initialize notifications:', err);
+    });
+
     if (!oneSignalAppId) {
       console.warn('⚠️ OneSignal App ID fehlt (extra.oneSignalAppId).');
       return;

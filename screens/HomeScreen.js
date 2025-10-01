@@ -33,6 +33,7 @@ import {
 import { getUid } from '../services/identity';
 import { setUserLastLocation } from '../services/users';
 import { getVerifiedUser, signOutUser, isUserVerified } from '../services/auth';
+import { triggerAlarmAlert } from '../services/notifications';
 import MapShim from '../components/MapShim';
 
 export default function HomeScreen({ navigation }) {
@@ -244,9 +245,18 @@ export default function HomeScreen({ navigation }) {
         visibility: useVerified ? VISIBILITY.VERIFIED : VISIBILITY.PUBLIC,
       });
 
-      console.log('✅ Alert created:', id, 'Navigating to AlarmScreen...');
+      console.log('✅ Alert created:', id);
 
-      // 3) Navigate to AlarmScreen to show the created alarm
+      // 3) Trigger local notification, vibration, and sound
+      await triggerAlarmAlert({
+        title: t('home.alerts.sent'),
+        body: t('home.alerts.sentMessage', { id: id.substring(0, 8) }),
+        data: { alertId: id, lat: coords.lat, lng: coords.lng },
+      });
+
+      console.log('✅ Alert notification triggered, navigating to AlarmScreen...');
+
+      // 4) Navigate to AlarmScreen to show the created alarm
       navigation.navigate('AlarmScreen', {
         alertId: id,
         lat: coords.lat,
