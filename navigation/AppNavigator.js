@@ -1,11 +1,13 @@
 import React, { lazy, Suspense } from 'react';
 import { Platform, View, Text, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors, typography } from '../styles/designSystem';
 
 // Core screens - loaded immediately
 import SplashScreen from '../screens/SplashScreen';
 import HomeScreen from '../screens/HomeScreen';
+import VerificationScreen from '../screens/VerificationScreen';
 
 // Lazy loaded screens for better initial load performance
 const WelcomeScreen = lazy(() => import('../screens/WelcomeScreen'));
@@ -25,7 +27,7 @@ const LoadingScreen = () => (
 );
 
 // Wrapper component for lazy-loaded screens
-const LazyScreenWrapper = ({ children }: { children: React.ReactNode }) => (
+const LazyScreenWrapper = ({ children }) => (
   <Suspense fallback={<LoadingScreen />}>
     {children}
   </Suspense>
@@ -36,16 +38,17 @@ const isWeb = Platform.OS === 'web';
 
 export default function AppNavigator() {
   return (
-    <Stack.Navigator
-      initialRouteName="SplashScreen"
-      screenOptions={{
-        // Web-spezifische Robustheit
-        animation: isWeb ? 'none' : 'default',
-        gestureEnabled: !isWeb,
-        fullScreenGestureEnabled: !isWeb,
-        headerBackTitleVisible: false,
-      }}
-    >
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="SplashScreen"
+        screenOptions={{
+          // Web-spezifische Robustheit
+          animation: isWeb ? 'none' : 'default',
+          gestureEnabled: !isWeb,
+          fullScreenGestureEnabled: !isWeb,
+          headerBackTitleVisible: false,
+        }}
+      >
       <Stack.Screen
         name="SplashScreen"
         component={SplashScreen}
@@ -75,6 +78,14 @@ export default function AppNavigator() {
         name="HomeScreen"
         component={HomeScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="VerificationScreen"
+        component={VerificationScreen}
+        options={{
+          headerShown: true,
+          title: 'Verification'
+        }}
       />
       <Stack.Screen
         name="AlarmScreen"
@@ -125,6 +136,7 @@ export default function AppNavigator() {
         )}
       </Stack.Screen>
     </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 

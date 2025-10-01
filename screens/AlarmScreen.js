@@ -8,18 +8,19 @@ import {
   Animated,
   Easing,
   Platform,
+  Pressable,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { typography, spacing, colors } from '../styles/designSystem';
 import { Ionicons } from '@expo/vector-icons';
-// ⬇️ Button-Import erstmal auskommentiert, um Fehlerquelle zu testen
-// import ButtonSecondary from '../components/atoms/ButtonSecondary';
 
 export default function AlarmScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const route = useRoute();
 
-  // Params aus NotificationScreen
+  // Params from alarm creation
   const {
     alertId = 'simulated-alert',
     distanceM = null,
@@ -69,28 +70,34 @@ export default function AlarmScreen() {
         <Ionicons name="alert-circle" size={96} color="#fff" />
       </Animated.View>
 
-      <Text style={styles.title}>Alarm wurde gesendet</Text>
+      <Text style={styles.title}>{t('alarm.title')}</Text>
       <Text style={styles.subtitle}>
-        Dein Standort wurde temporär geteilt. Hilfe ist informiert.
+        {t('alarm.subtitle')}
       </Text>
 
-      {/* Debug/Info-Bereich (nur DEV) */}
-      {__DEV__ && (
-        <View style={styles.debugBox}>
-          <Text style={styles.debugText}>alertId: {alertId}</Text>
-          {distanceM !== null && (
-            <Text style={styles.debugText}>Entfernung: {distanceM} m</Text>
-          )}
-          {sinceSec !== null && (
-            <Text style={styles.debugText}>Ausgelöst vor: {sinceSec} s</Text>
-          )}
-        </View>
-      )}
+      {/* Info box showing alert details */}
+      <View style={styles.infoBox}>
+        <Text style={styles.infoText}>{t('alarm.alertId')}: {alertId}</Text>
+        {lat !== null && lng !== null && (
+          <Text style={styles.infoText}>
+            Lat: {lat?.toFixed(6)}, Lng: {lng?.toFixed(6)}
+          </Text>
+        )}
+        {distanceM !== null && (
+          <Text style={styles.infoText}>
+            {t('alarm.distance')}: {distanceM} {t('alarm.meters')}
+          </Text>
+        )}
+        {sinceSec !== null && (
+          <Text style={styles.infoText}>
+            {t('alarm.triggeredAgo')}: {sinceSec} {t('alarm.seconds')}
+          </Text>
+        )}
+      </View>
 
-      {/* Test-Element statt Button */}
-      <Text style={styles.testText} onPress={goHome}>
-        [Test] Zurück zur Startseite
-      </Text>
+      <Pressable style={styles.button} onPress={goHome}>
+        <Text style={styles.buttonText}>{t('alarm.backToHome')}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -120,23 +127,34 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     opacity: 0.95,
   },
-  testText: {
-    marginTop: spacing.lg,
+  button: {
+    marginTop: spacing.xl,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  buttonText: {
+    ...typography.h3,
     color: '#fff',
     fontWeight: '700',
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#fff',
-    borderRadius: 6,
+    textAlign: 'center',
   },
-  debugBox: {
+  infoBox: {
     marginVertical: spacing.lg,
-    padding: spacing.md,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
+    padding: spacing.lg,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    width: '100%',
   },
-  debugText: {
-    ...typography.small,
+  infoText: {
+    ...typography.body,
     color: '#fff',
+    marginBottom: spacing.xs,
+    fontWeight: '500',
   },
 });
