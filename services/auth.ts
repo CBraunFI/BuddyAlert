@@ -103,11 +103,11 @@ export async function signInWithOAuth(provider: AuthProvider): Promise<VerifiedU
 export async function checkRedirectResult(): Promise<VerifiedUser | null> {
   try {
     const result = await getRedirectResult(auth);
-    if (!result) return null;
+    if (!result || !result.providerId) return null;
 
     const provider = result.providerId.split('.')[0] as AuthProvider;
     const verifiedUser = await createVerifiedUser(result.user, provider);
-    
+
     return verifiedUser;
   } catch (error: any) {
     logError(error, 'checkRedirectResult', ErrorSeverity.MEDIUM);

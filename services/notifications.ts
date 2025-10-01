@@ -10,6 +10,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -126,10 +128,13 @@ export async function sendAlarmNotification(options: {
         body: options.body,
         icon: '/icon.png',
         badge: '/icon.png',
-        vibrate: [500, 200, 500, 200, 500],
         requireInteraction: true,
         tag: 'buddyalert-alarm',
       });
+      // Trigger vibration separately for web
+      if ('vibrate' in navigator) {
+        navigator.vibrate([500, 200, 500, 200, 500]);
+      }
     }
     return;
   }

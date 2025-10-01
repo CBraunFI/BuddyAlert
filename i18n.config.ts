@@ -21,7 +21,7 @@ i18n
     resources,
     lng: deviceLocale, // Default language from device
     fallbackLng: 'de', // Fallback to German
-    compatibilityJSON: 'v3',
+    compatibilityJSON: 'v4',
     interpolation: {
       escapeValue: false, // React already escapes
     },

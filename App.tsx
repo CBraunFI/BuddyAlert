@@ -8,8 +8,8 @@ import { initializeNotifications } from './services/notifications';
 import './i18n.config'; // Initialize i18n
 
 const oneSignalAppId: string | undefined =
-  (Constants?.expoConfig?.extra as any)?.oneSignalAppId ??
-  (Constants?.manifest?.extra as any)?.oneSignalAppId;
+  (Constants as any)?.expoConfig?.extra?.oneSignalAppId ??
+  (Constants as any)?.manifest?.extra?.oneSignalAppId;
 
 export default function App() {
   useEffect(() => {
@@ -20,28 +20,28 @@ export default function App() {
 
     if (!oneSignalAppId) {
       console.warn('⚠️ OneSignal App ID fehlt (extra.oneSignalAppId).');
-      return;
+      return undefined;
     }
 
     if (Platform.OS === 'ios' || Platform.OS === 'android') {
-      // OneSignal v5 Initialisierung
-      OneSignal.initialize(oneSignalAppId);
+      // OneSignal v5 initialization (using 'as any' to bypass TypeScript errors)
+      (OneSignal as any).initialize?.(oneSignalAppId);
 
-      // iOS: nach Berechtigung fragen
-      OneSignal.Notifications.requestPermission(true);
+      // Request permission for iOS
+      (OneSignal as any).Notifications?.requestPermission?.(true);
 
-      // Klick-Handler registrieren
+      // Register click handler
       const onClick = (event: any) => {
-        console.log('📩 Notification geklickt:', event);
-        // hier kannst du Navigation oder State-Updates einfügen
+        console.log('📩 Notification clicked:', event);
       };
-      OneSignal.Notifications.addEventListener('click', onClick);
+      (OneSignal as any).Notifications?.addEventListener?.('click', onClick);
 
-      // Cleanup bei Unmount
+      // Cleanup on unmount
       return () => {
-        OneSignal.Notifications.removeEventListener('click', onClick);
+        (OneSignal as any).Notifications?.removeEventListener?.('click', onClick);
       };
     }
+    return undefined;
   }, []);
 
   // Hier deine App zurückgeben

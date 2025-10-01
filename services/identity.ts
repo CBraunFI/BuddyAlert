@@ -32,7 +32,8 @@ export async function getUid(): Promise<string> {
   if (Platform.OS === 'web') {
     uid = generateUUID();
   } else {
-    uid = await Crypto.getRandomUUIDAsync();
+    // Mobile: Use expo-crypto
+    uid = await (Crypto as any).randomUUID?.() || generateUUID();
   }
 
   await AsyncStorage.setItem(KEY, uid);

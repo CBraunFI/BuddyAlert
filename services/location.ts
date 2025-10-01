@@ -44,7 +44,6 @@ export async function requestLocationPermissions(): Promise<LocationPermissionRe
 export async function getCurrentPositionSafe(options: GetPositionOptions = {}): Promise<Position> {
   const {
     timeoutMs = 8000,
-    maximumAgeMs = 60_000,
     accuracy = DEFAULT_ACCURACY,
   } = options;
 
@@ -66,7 +65,6 @@ export async function getCurrentPositionSafe(options: GetPositionOptions = {}): 
   try {
     const pos = await Location.getCurrentPositionAsync({
       accuracy,
-      maximumAge: maximumAgeMs,
       mayShowUserSettingsDialog: false,
     });
 

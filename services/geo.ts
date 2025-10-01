@@ -23,7 +23,7 @@ export function makeGeohash(lat: number, lng: number): string {
  * @param lng Longitude
  * @param radiusInM Radius in meters (default: 500)
  */
-export function makeGeoBounds(lat: number, lng: number, radiusInM: number = 500): string[] {
+export function makeGeoBounds(lat: number, lng: number, radiusInM: number = 500): [string, string][] {
   return geohashQueryBounds([lat, lng], radiusInM);
 }
 
